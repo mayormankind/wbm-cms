@@ -50,11 +50,10 @@ module.exports = {
         }
 
         const fileKey = getKey({ directory, file });
-        const buf = file.buffer || file.stream;
 
         supabase.storage
           .from(bucket)
-          .upload(fileKey, Buffer.from(buf, "binary"), {
+          .upload(fileKey, Buffer.from(file.buffer, "binary"), {
             cacheControl: "public, max-age=31536000, immutable",
             upsert: true,
             contentType: file.mime,
@@ -76,9 +75,22 @@ module.exports = {
           .catch((err) => reject(err));
       });
 
+    const uploadStream = (file) =>
+      new Promise((resolve, reject) => {
+        if (!file.stream) return reject(new Error("Missing file stream"));
+        const chunks = [];
+        file.stream.on("data", (chunk) => chunks.push(chunk));
+        file.stream.on("end", () => {
+          file.buffer = Buffer.concat(chunks);
+          upload(file).then(resolve).catch(reject);
+        });
+        file.stream.on("error", reject);
+      });
+
     return {
       upload,
-      uploadStream: upload, // Strapi 5 uses uploadStream for better performance
+      uploadStream,
+
       delete: (file) =>
         new Promise((resolve, reject) => {
           supabase.storage
