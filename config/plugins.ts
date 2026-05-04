@@ -9,7 +9,7 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Plugin =>
         apiUrl: env('SUPABASE_URL'),
         apiKey: env('SUPABASE_SERVICE_ROLE_KEY'),
         bucket: env('SUPABASE_BUCKET', 'media'),
-        directory: env('SUPABASE_DIRECTORY', 'media'),
+        directory: env('SUPABASE_DIRECTORY', ''),
         options: {},
       },
       actionOptions: {
